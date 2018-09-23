@@ -1,5 +1,7 @@
 package com.courses.model;
 
+import com.courses.dao.Sql2oCourseDao;
+import com.courses.dao.Sql2oCourseDaoTest;
 import com.courses.testing.ApiClient;
 import com.courses.testing.ApiResponse;
 import com.google.gson.Gson;
@@ -20,6 +22,7 @@ public class ApiTest {
     private Connection conn;
     private ApiClient client;
     private Gson gson;
+    private Sql2oCourseDao courseDao;
 
     @BeforeClass
     public static void startServer(){
@@ -35,6 +38,7 @@ public class ApiTest {
     @Before
     public void setUp() throws Exception {
         Sql2o sql2o = new Sql2o(TEST_DBSTRING + ";INIT=RUNSCRIPT from 'classpath:db/init.sql'", "", "");
+        courseDao = new Sql2oCourseDao(sql2o);
         conn = sql2o.open();
         client = new ApiClient("http://localhost:"+PORT);
         gson = new Gson();
@@ -53,5 +57,26 @@ public class ApiTest {
 
         ApiResponse res = client.request("POST", "/courses", gson.toJson(values));
         assertEquals(201, res.getStatus());
+    }
+
+    @Test
+    public void coursesCanBeAccessedById() throws Exception {
+        Course course = newTestCourse();
+        courseDao.add(course);
+
+        ApiResponse res = client.request("GET", "/courses/"+course.getId());
+        Course retrieved = gson.fromJson(res.getBody(), Course.class);
+        assertEquals(course, retrieved);
+    }
+
+    @Test
+    public void missingCoursesReturnNotFoundStatus() throws Exception {
+        ApiResponse res = client.request("GET", "/courses/42");
+
+        assertEquals(404, res.getStatus());
+    }
+
+    private Course newTestCourse(){
+        return new Course("Test","http://test.com");
     }
 }

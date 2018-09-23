@@ -57,4 +57,8 @@ public class Sql2oCourseDaoTest {
         Course foundCourse = dao.findById(course.getId());
         assertEquals(course, foundCourse);
     }
+
+    private Course newTestCourse(){
+        return new Course("Test","http://test.com");
+    }
 }
