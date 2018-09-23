@@ -39,6 +39,7 @@ public class Api {
         }, gson::toJson);
 
         get("/courses", "application/json", (req, res)->courseDao.findALl(), gson::toJson);
+
         get("/courses/:id", "application/json", (req, res)->{
             int id = Integer.parseInt(req.params("id"));
             Course course = courseDao.findById(id);
@@ -59,6 +60,11 @@ public class Api {
             }
             res.status(201);
             return review;
+        }, gson::toJson);
+
+        get("/courses/:courseId/reviews", "application/json", (req, res)->{
+            int courseId = Integer.parseInt(req.params("courseId"));
+            return reviewDao.findByCourseId(courseId);
         }, gson::toJson);
 
         exception(ApiError.class, (exc, req, res)->{
